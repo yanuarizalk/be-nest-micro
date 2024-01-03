@@ -10,20 +10,20 @@ import { ConfigModule } from '@nestjs/config';
 @Module({
   imports: [
     ConfigModule.forRoot({
-      load: [configuration]
-    }), 
+      load: [configuration],
+    }),
     MongooseModule.forRootAsync({
       useFactory: () => ({
         uri: configuration().database.uri,
-      })
+      }),
     }),
     JwtModule.register({
       secret: configuration().secrets.jwt,
       signOptions: {
-        expiresIn: '7d'
-      }
+        expiresIn: '7d',
+      },
     }),
-    UserModule, 
+    UserModule,
   ],
   controllers: [AuthController],
   providers: [AuthService],

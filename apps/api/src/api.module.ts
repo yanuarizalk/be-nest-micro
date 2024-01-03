@@ -16,32 +16,32 @@ import { JwtModule } from '@nestjs/jwt';
 @Module({
   imports: [
     ConfigModule.forRoot({
-      load: [configuration]
-    }), 
+      load: [configuration],
+    }),
     MongooseModule.forRootAsync({
       useFactory: () => ({
         uri: configuration().database.uri,
-      })
+      }),
     }),
     ServeStaticModule.forRoot({
       rootPath: join(process.cwd(), 'public'),
       serveStaticOptions: {
         cacheControl: true,
-      }
+      },
     }),
     MulterModule.registerAsync({
-      useClass: UserMulterOption
+      useClass: UserMulterOption,
     }),
     JwtModule.register({
-      secret: configuration().secrets.jwt
+      secret: configuration().secrets.jwt,
     }),
-    UserModule, 
+    UserModule,
   ],
   controllers: [ApiController],
   providers: [
     {
       provide: APP_GUARD,
-      useClass: AuthGuard
+      useClass: AuthGuard,
     },
     ApiService,
   ],
