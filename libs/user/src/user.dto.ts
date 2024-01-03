@@ -56,6 +56,13 @@ export class UpsertProfileDto {
   displayName: string;
 
   @ApiProperty({ 
+    example: 'M', description: 'Either M / F',
+    required: false
+  })
+  @IsEnum(['M', 'F'])
+  gender: string;
+
+  @ApiProperty({ 
     example: '2001-01-14', description: 'The birth date of the user',
     required: false
   })

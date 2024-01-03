@@ -1,6 +1,18 @@
-import { Body, Controller, Get, MaxFileSizeValidator, ParseFilePipe, Post, Put, Request, UploadedFile, UseInterceptors } from '@nestjs/common';
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import {
+  Body,
+  Controller,
+  Get,
+  MaxFileSizeValidator,
+  ParseFilePipe,
+  Post,
+  Put,
+  Request,
+  UploadedFile,
+  UseInterceptors,
+} from '@nestjs/common';
 import { ApiService } from './api.service';
-import { CreateUserDto, UpsertProfileDto } from '@app/user/user.dto';
+import { UpsertProfileDto } from '@app/user/user.dto';
 import { UserService } from '@app/user';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiBearerAuth, ApiConsumes, ApiTags } from '@nestjs/swagger';
@@ -10,7 +22,10 @@ import { ApiBearerAuth, ApiConsumes, ApiTags } from '@nestjs/swagger';
 @Controller()
 export class ApiController {
   // constructor(private readonly apiService: ApiService) {}
-  constructor(private readonly apiService: ApiService, private readonly userService: UserService) {}
+  constructor(
+    private readonly apiService: ApiService,
+    private readonly userService: UserService,
+  ) {}
 
   @Get('getProfile')
   getProfile(): string {
@@ -19,7 +34,7 @@ export class ApiController {
 
   @Post('createProfile')
   createProfile(@Request() req: Request, @Body() dto: UpsertProfileDto) {
-    let updatedProfile = this.userService.update(req['user'].sub, dto);
+    const updatedProfile = this.userService.update(req['user'].sub, dto);
 
     return updatedProfile;
   }
@@ -29,11 +44,18 @@ export class ApiController {
   @ApiBearerAuth()
   @Put('updateProfile')
   @UseInterceptors(FileInterceptor('file'))
-  updateProfile(@Request() req: Request, @Body() dto: UpsertProfileDto, @UploadedFile(new ParseFilePipe({
-    fileIsRequired: false,
-    validators: [new MaxFileSizeValidator({maxSize: 5124000})]
-  })) file: Express.Multer.File) {
-    let updatedProfile = this.userService.update(req['user'].sub, dto);
+  updateProfile(
+    @Request() req: Request,
+    @Body() dto: UpsertProfileDto,
+    @UploadedFile(
+      new ParseFilePipe({
+        fileIsRequired: false,
+        validators: [new MaxFileSizeValidator({ maxSize: 5124000 })],
+      }),
+    )
+    file: Express.Multer.File,
+  ) {
+    const updatedProfile = this.userService.update(req['user'].sub, dto);
 
     return updatedProfile;
   }

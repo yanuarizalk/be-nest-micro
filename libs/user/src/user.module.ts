@@ -4,11 +4,15 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { User, UserFactory } from './user.schema';
 
 @Module({
-  imports: [MongooseModule.forFeatureAsync([{
-    name: User.name,
-    // schema: UserSchema,
-    useFactory: UserFactory
-  }])],
+  imports: [
+    MongooseModule.forFeatureAsync([
+      {
+        name: User.name,
+        // schema: UserSchema,
+        useFactory: UserFactory,
+      },
+    ]),
+  ],
   providers: [UserService],
   exports: [UserService],
 })
