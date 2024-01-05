@@ -19,6 +19,12 @@ export class UserService {
     return existingUser.updateOne(dto);
   }
 
+  async findId(id: string): Promise<User> {
+    return this.userModel
+      .findById(Types.ObjectId.createFromHexString(id))
+      .exec();
+  }
+
   async findOne(username, email: string): Promise<User> {
     return this.userModel
       .findOne({

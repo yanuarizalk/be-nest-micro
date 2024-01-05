@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, Length, Max, Min } from 'class-validator';
+import { IsNotEmpty, IsNumber, Length, Max, Min } from 'class-validator';
 
 export class PublishMessageDto {
   @ApiProperty({
@@ -22,11 +22,21 @@ export class PublishMessageDto {
 }
 
 export class ViewMessagesDto {
+  constructor(data: object = null) {
+    if (data) {
+      this.page = data['page'];
+      this.pageSize = data['pageSize'];
+      this.userId = data['userId'];
+      this.ownerId = data['ownerId'];
+    }
+  }
+
   @ApiProperty({
     example: 1,
     description: 'Paginate current page',
     required: false,
   })
+  @IsNumber()
   @Min(1)
   page: number;
 
@@ -35,6 +45,7 @@ export class ViewMessagesDto {
     description: 'Paginate message size, min: 10, max: 100',
     required: false,
   })
+  @IsNumber()
   @Min(10)
   @Max(100)
   pageSize: number;
@@ -45,6 +56,13 @@ export class ViewMessagesDto {
     required: false,
   })
   userId: string;
+
+  @ApiProperty({
+    example: new Date(),
+    description: 'ISO 8601 date (UTC)',
+    required: false,
+  })
+  lastFetch: Date;
 
   ownerId: string; // authenticated user
 }

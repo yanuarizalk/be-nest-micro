@@ -10,6 +10,11 @@ import {
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
+enum Gender {
+  Male = 'M',
+  Female = 'F',
+}
+
 export class CreateUserDto {
   @ApiProperty({
     example: 'dummy.01@yanuarizal.net',
@@ -76,7 +81,7 @@ export class UpsertProfileDto {
     description: 'Either M / F',
     required: false,
   })
-  @IsEnum(['M', 'F'])
+  @IsEnum(Gender)
   gender: string;
 
   @ApiProperty({

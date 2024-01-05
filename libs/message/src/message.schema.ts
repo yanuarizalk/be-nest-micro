@@ -1,5 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { MaxLength } from 'class-validator';
+import { Document } from 'mongoose';
 
 @Schema()
 export class Message extends Document {
@@ -27,6 +28,12 @@ export class Message extends Document {
 }
 
 export class Messages {
+  constructor() {
+    this.data = [];
+    this.page = 1;
+    this.pageSize = 10;
+    this.pageTotal = 0;
+  }
   data: Message[];
   page: number;
   pageSize: number;

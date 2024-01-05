@@ -63,9 +63,27 @@ export class User extends Document {
 
   @Prop()
   weight: number;
+
+  profileOnly() {}
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
+
+UserSchema.methods.profileOnly = function () {
+  const result: any = {};
+
+  result.id = this._id;
+  result.displayName = this.displayName;
+  result.interests = this.interests;
+  result.gender = this.gender;
+  result.height = this.height;
+  result.weight = this.weight;
+  result.birthDate = this.birthDate;
+  result.horoscope = this.horoscope;
+  result.zodiac = this.zodiac;
+
+  return result;
+};
 
 export function UserFactory() {
   const schema = UserSchema;

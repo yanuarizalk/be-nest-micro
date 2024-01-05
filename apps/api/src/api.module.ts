@@ -12,6 +12,7 @@ import { UserMulterOption } from './multer/multer';
 import { APP_GUARD } from '@nestjs/core';
 import { AuthGuard } from './auth/auth.guard';
 import { JwtModule } from '@nestjs/jwt';
+import { CONSUMER_QUEUE, MessageModule } from '@app/message';
 
 @Module({
   imports: [
@@ -36,6 +37,15 @@ import { JwtModule } from '@nestjs/jwt';
       secret: configuration().secrets.jwt,
     }),
     UserModule,
+    MessageModule.register({
+      options: {
+        urls: [configuration().broker.uri],
+        queue: configuration().broker.queue ?? CONSUMER_QUEUE,
+        queueOptions: {
+          durable: true,
+        },
+      },
+    }),
   ],
   controllers: [ApiController],
   providers: [

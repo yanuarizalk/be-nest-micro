@@ -1,12 +1,16 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import {
+  BadRequestException,
   Body,
   Controller,
   Get,
+  HttpException,
   MaxFileSizeValidator,
+  Param,
   ParseFilePipe,
   Post,
   Put,
+  Query,
   Request,
   UploadedFile,
   UseInterceptors,
@@ -15,7 +19,19 @@ import { ApiService } from './api.service';
 import { UpsertProfileDto } from '@app/user/user.dto';
 import { UserService } from '@app/user';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { ApiBearerAuth, ApiConsumes, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiConsumes,
+  ApiParam,
+  ApiQuery,
+  ApiTags,
+} from '@nestjs/swagger';
+import { Types } from 'mongoose';
+import { PublishMessageDto, ViewMessagesDto } from '@app/message/message.dto';
+import { MessageService } from '@app/message';
+import { validate } from 'class-validator';
+import { plainToClass } from 'class-transformer';
 
 @ApiTags('user')
 @ApiBearerAuth()
@@ -25,11 +41,35 @@ export class ApiController {
   constructor(
     private readonly apiService: ApiService,
     private readonly userService: UserService,
+    private readonly messageService: MessageService,
   ) {}
 
-  @Get('getProfile')
-  getProfile(): string {
-    return 'zz';
+  @Get(['getProfile', 'getProfile/:id'])
+  @ApiParam({
+    name: 'id',
+    required: false,
+  })
+  @ApiQuery({
+    name: 'detail',
+    description: 'bool. Give detailed user, show username & email',
+    example: 'true',
+    required: false,
+  })
+  async getProfile(
+    @Param('id') id: string,
+    @Request() req: Request,
+    @Query('detail') detailed: string,
+  ) {
+    if (!id) {
+      id = req['user'].sub;
+    } else {
+      if (!Types.ObjectId.isValid(id))
+        throw new HttpException('Invalid identifier', 400);
+    }
+
+    const user = await this.userService.findId(id);
+
+    return detailed == 'true' ? user : user.profileOnly();
   }
 
   @Post('createProfile')
@@ -39,9 +79,7 @@ export class ApiController {
     return updatedProfile;
   }
 
-  @ApiBearerAuth()
   @ApiConsumes('multipart/form-data')
-  @ApiBearerAuth()
   @Put('updateProfile')
   @UseInterceptors(FileInterceptor('file'))
   updateProfile(
@@ -60,15 +98,34 @@ export class ApiController {
     return updatedProfile;
   }
 
-  @ApiBearerAuth()
   @Get('viewMessages')
-  viewMessages(): string {
-    return 'hh';
+  @ApiQuery({ type: ViewMessagesDto })
+  async viewMessages(@Query() query, @Request() req: Request) {
+    const dto = plainToClass(ViewMessagesDto, query, {
+      enableImplicitConversion: true,
+    });
+
+    const b = await validate(dto);
+
+    if (b.length > 0) {
+      const errMessages: string[] = [];
+      b.forEach((message) => {
+        if (message.constraints) {
+          errMessages.push(...Object.values(message.constraints));
+        }
+      });
+
+      throw new BadRequestException(errMessages);
+    }
+
+    dto.ownerId = req['user'].sub;
+
+    return this.messageService.view(dto);
   }
 
-  @ApiBearerAuth()
   @Post('sendMessage')
-  sendMessage(): string {
-    return 'hh';
+  sendMessage(@Body() dto: PublishMessageDto, @Request() req: Request) {
+    dto.sender = req['user'].sub;
+    return this.messageService.publish(dto);
   }
 }

@@ -1,37 +1,64 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Message, Messages } from './message.schema';
-import { Model } from 'mongoose';
+import mongoose, { Document, Model, Query, Types } from 'mongoose';
 import { PublishMessageDto, ViewMessagesDto } from './message.dto';
 import { ClientProxy } from '@nestjs/microservices';
 
-export const CHAT_SERVICE = 'CHAT_SERVICE';
+export const CONSUMER_SERVICE = 'CHAT_SERVICE';
+export const CONSUMER_QUEUE = 'user_message';
 
 @Injectable()
 export class MessageService {
   constructor(
     @InjectModel(Message.name) private messageModel: Model<Message>,
-    @Inject(CHAT_SERVICE) private client: ClientProxy,
+    @Inject(CONSUMER_SERVICE) private client: ClientProxy,
   ) {}
 
-  async view(dto: ViewMessagesDto): Promise<Messages | Error> {
-    const q = {
-      $or: [
+  async view(dto: ViewMessagesDto): Promise<Messages> {
+    let q = this.messageModel.where().getFilter();
+
+    if (dto.userId) {
+      q = {
+        $or: [
+          {
+            sender: dto.ownerId,
+            receiver: dto.userId,
+          },
+          {
+            sender: dto.userId,
+            receiver: dto.ownerId,
+          },
+        ],
+      };
+    } else {
+      q = {
+        $or: [
+          {
+            receiver: dto.ownerId,
+          },
+          {
+            sender: dto.ownerId,
+          },
+        ],
+      };
+    }
+
+    if (dto.lastFetch && isFinite(dto.lastFetch.getTime())) {
+      q.$and = [
         {
-          sender: dto.ownerId,
-          receiver: dto.userId,
+          _id: {
+            $gte: Types.ObjectId.createFromTime(dto.lastFetch.getTime() / 1000),
+          },
         },
-        {
-          sender: dto.userId,
-          receiver: dto.ownerId,
-        },
-      ],
-    };
+      ];
+    }
+
     const messages = new Messages();
     const count = await this.messageModel.countDocuments(q).exec();
 
     if (count <= 0) {
-      return new Messages();
+      return messages;
     }
 
     if (dto.page == null || dto.page < 1) dto.page = 1;
@@ -43,15 +70,12 @@ export class MessageService {
     messages.pageSize = dto.pageSize;
     messages.pageTotal = Math.floor((count - 1) / dto.pageSize) + 1;
 
-    try {
-      messages.data = await this.messageModel
-        .find(q)
-        .limit(dto.pageSize)
-        .skip(dto.page * dto.pageSize)
-        .exec();
-    } catch (err) {
-      return Promise.reject(err);
-    }
+    messages.data = await this.messageModel
+      .find(q)
+      .limit(dto.pageSize)
+      .skip((dto.page - 1) * dto.pageSize)
+      .sort({ _id: -1 })
+      .exec();
 
     return messages;
   }
@@ -62,7 +86,7 @@ export class MessageService {
     try {
       const msgResult = await msg.save();
 
-      this.client.send(
+      this.client.emit(
         {
           receiver: dto.receiver,
         },
