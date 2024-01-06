@@ -20,18 +20,22 @@
     "paths": {
       "@app/user": [
         "libs/user/src",
-        "libs/user/src"
       ],
       "@app/user/*": [
         "libs/user/src/*",
-        "libs/user/src/*"
       ],
       "@app/message": [
         "libs/message/src"
       ],
       "@app/message/*": [
         "libs/message/src/*"
-      ]
+      ],
+      "@app/modules": [
+        "libs/modules/src"
+      ],
+      "@app/modules/*": [
+        "libs/modules/src/*"
+      ],
     }
   }
 }

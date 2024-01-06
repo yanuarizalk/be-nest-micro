@@ -13,18 +13,15 @@ export class DefaultResponseInterceptor implements NestInterceptor {
       map((v) => {
         if (!!v && v.constructor === Array && v.length == 0) {
           v = [];
-        } else if (
-          !!v &&
-          v.constructor === Object &&
-          Object.keys(v).length == 0
-        ) {
-          v = {};
-        }
-        if (v.data) {
-          return {
-            message: 'success',
-            ...v,
-          };
+        } else if (!!v && v.constructor === Object) {
+          if (Object.keys(v).length == 0) {
+            v = {};
+          } else if (v.data) {
+            return {
+              message: 'success',
+              ...v,
+            };
+          }
         }
 
         return {

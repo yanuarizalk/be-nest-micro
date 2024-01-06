@@ -37,6 +37,9 @@ lerna-debug.log*
 # Private
 .env
 
+# Personal workspace
+settings.json
+
 # Storage
 services/mongo-data
 services/rabbitmq-data

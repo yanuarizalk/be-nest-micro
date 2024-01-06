@@ -4,6 +4,7 @@ export default () => ({
     // sub app service port / address
     user: parseInt(process.env.USER_SERVICE_ADDRESS, 10) || 3001,
     auth: parseInt(process.env.AUTH_SERVICE_ADDRESS, 10) || 3002,
+    stream: parseInt(process.env.STREAM_SERVICE_ADDRESS, 10) || 3003,
   },
   database: {
     uri: process.env.DATABASE_URI ?? 'mongodb://localhost:27017',

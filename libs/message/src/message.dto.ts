@@ -10,8 +10,6 @@ export class PublishMessageDto {
   @Length(1, 200)
   text: string;
 
-  sender: string;
-
   @ApiProperty({
     example: '6594f3457beb040001f928db',
     description: 'User id of receiver',
@@ -19,6 +17,10 @@ export class PublishMessageDto {
   })
   @IsNotEmpty()
   receiver: string;
+
+  sender: string;
+
+  dateTime: Date;
 }
 
 export class ViewMessagesDto {

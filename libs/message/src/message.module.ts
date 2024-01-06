@@ -1,5 +1,8 @@
 import { DynamicModule, Module } from '@nestjs/common';
-import { CONSUMER_SERVICE, MessageService } from './message.service';
+import {
+  CONSUMER_SERVICE,
+  MessageService,
+} from './message.service';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Message, MessageFactory } from './message.schema';
 import { ClientsModule, RmqOptions, Transport } from '@nestjs/microservices';

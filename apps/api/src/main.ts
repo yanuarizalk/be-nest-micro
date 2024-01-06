@@ -7,7 +7,11 @@ import { DefaultResponseInterceptor } from './response/default.interceptor';
 import { DebuggerFilter } from './response/debugger.filter';
 
 async function bootstrap() {
-  const app = await NestFactory.create(ApiModule);
+  const app = await NestFactory.create(ApiModule, {
+    logger: configuration().inProduction()
+      ? ['error', 'fatal']
+      : ['debug', 'error', 'fatal', 'log', 'verbose', 'warn'],
+  });
 
   const swaggerConfig = new DocumentBuilder()
     .setTitle('User API Documentation')

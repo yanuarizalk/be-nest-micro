@@ -1,4 +1,4 @@
-import { Body, Controller, HttpException, Post } from '@nestjs/common';
+import { Body, Controller, HttpException, Logger, Post } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { ApiTags } from '@nestjs/swagger';
 import { CreateUserDto } from '@app/user/user.dto';
@@ -17,6 +17,9 @@ export class AuthController {
   async register(@Body() dto: CreateUserDto) {
     try {
       const createdUser = await this.userService.create(dto);
+      Logger.debug(
+        `User with name ${dto.username} & email ${dto.email} has just been registered`,
+      );
       return createdUser;
     } catch (err) {
       if (err.code == 11000) {

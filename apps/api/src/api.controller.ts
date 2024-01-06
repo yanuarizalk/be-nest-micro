@@ -5,7 +5,9 @@ import {
   Controller,
   Get,
   HttpException,
+  Logger,
   MaxFileSizeValidator,
+  NotFoundException,
   Param,
   ParseFilePipe,
   Post,
@@ -32,6 +34,9 @@ import { PublishMessageDto, ViewMessagesDto } from '@app/message/message.dto';
 import { MessageService } from '@app/message';
 import { validate } from 'class-validator';
 import { plainToClass } from 'class-transformer';
+
+const ERR_INVALID_ID = new BadRequestException('Invalid identifier');
+const ERR_USER_NOT_FOUND = new NotFoundException('User not found');
 
 @ApiTags('user')
 @ApiBearerAuth()
@@ -63,11 +68,13 @@ export class ApiController {
     if (!id) {
       id = req['user'].sub;
     } else {
-      if (!Types.ObjectId.isValid(id))
-        throw new HttpException('Invalid identifier', 400);
+      if (!Types.ObjectId.isValid(id)) throw ERR_INVALID_ID;
     }
 
     const user = await this.userService.findId(id);
+    if (!user) {
+      throw ERR_USER_NOT_FOUND;
+    }
 
     return detailed == 'true' ? user : user.profileOnly();
   }
@@ -105,11 +112,11 @@ export class ApiController {
       enableImplicitConversion: true,
     });
 
-    const b = await validate(dto);
+    const validation = await validate(dto);
 
-    if (b.length > 0) {
+    if (validation.length > 0) {
       const errMessages: string[] = [];
-      b.forEach((message) => {
+      validation.forEach((message) => {
         if (message.constraints) {
           errMessages.push(...Object.values(message.constraints));
         }
@@ -124,8 +131,18 @@ export class ApiController {
   }
 
   @Post('sendMessage')
-  sendMessage(@Body() dto: PublishMessageDto, @Request() req: Request) {
+  async sendMessage(@Body() dto: PublishMessageDto, @Request() req: Request) {
     dto.sender = req['user'].sub;
+
+    if (!Types.ObjectId.isValid(dto.receiver)) throw ERR_INVALID_ID;
+
+    const receiver = await this.userService.findId(dto.receiver);
+    if (!receiver) {
+      throw ERR_USER_NOT_FOUND;
+    }
+
+    Logger.debug(`User ${dto.sender} send a messsage to ${dto.receiver}`);
+
     return this.messageService.publish(dto);
   }
 }

@@ -86,7 +86,8 @@
     ],
     "moduleNameMapper": {
       "^@app/user(|/.*)$": "<rootDir>/libs/user/src/$1",
-      "^@app/message(|/.*)$": "<rootDir>/libs/message/src/$1"
+      "^@app/message(|/.*)$": "<rootDir>/libs/message/src/$1",
+      "^@app/modules(|/.*)$": "<rootDir>/libs/modules/src/$1"
     }
   }
 }

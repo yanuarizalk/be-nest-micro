@@ -1,7 +1,7 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, Optional } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Message, Messages } from './message.schema';
-import mongoose, { Document, Model, Query, Types } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { PublishMessageDto, ViewMessagesDto } from './message.dto';
 import { ClientProxy } from '@nestjs/microservices';
 
@@ -12,7 +12,7 @@ export const CONSUMER_QUEUE = 'user_message';
 export class MessageService {
   constructor(
     @InjectModel(Message.name) private messageModel: Model<Message>,
-    @Inject(CONSUMER_SERVICE) private client: ClientProxy,
+    @Optional() @Inject(CONSUMER_SERVICE) private client: ClientProxy,
   ) {}
 
   async view(dto: ViewMessagesDto): Promise<Messages> {
@@ -80,26 +80,19 @@ export class MessageService {
     return messages;
   }
 
-  async publish(dto: PublishMessageDto): Promise<Message> {
-    const msg = new this.messageModel(dto);
+  publish(dto: PublishMessageDto) {
+    dto.dateTime = new Date();
 
-    try {
-      const msgResult = await msg.save();
+    return this.client.emit('consume', dto);
+  }
 
-      this.client.emit(
-        {
-          receiver: dto.receiver,
-        },
-        {
-          sender: dto.sender,
-          text: dto.text,
-          time: msgResult._id.getTimestamp(),
-        },
-      );
-
-      return msgResult;
-    } catch (err) {
-      return Promise.reject(err);
+  save(dto: PublishMessageDto): Promise<Message> {
+    if (typeof dto.dateTime === 'string') {
+      dto.dateTime = new Date(dto.dateTime);
     }
+    const msg = new this.messageModel(dto);
+    const idBasedTime = Types.ObjectId.generate(dto.dateTime.getTime() / 1000);
+    msg._id = new Types.ObjectId(idBasedTime);
+    return msg.save();
   }
 }
