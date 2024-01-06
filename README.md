@@ -1,6 +1,6 @@
 ## Description
 
-[Nest](https://github.com/nestjs/nest) application example involing microservices, restful api, chat, jwt auth, mongo, docker, dto, validation, socket io, rabbitmq queue, swagger, kong & unit tests.
+[Nest](https://github.com/nestjs/nest) application example involing microservices, restful api, chat, jwt auth, mongo, docker, dto, validation, file upload, socket io, rabbitmq queue, swagger, kong & unit tests.
 
 ## Installation
 
