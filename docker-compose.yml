@@ -7,7 +7,6 @@ services:
       - "27017:27017"
     volumes:
       - ./services/mongo-data:/data/db
-    # user: 1000:1000
 
   rabbitmq:
     image: rabbitmq:3.12.11-management-alpine
@@ -19,15 +18,83 @@ services:
       - ./services/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf
       - ./services/advanced.config:/etc/rabbitmq/advanced.config
 
-  # kong:
-  #   image: kong/kong-gateway:3.4.3.2
-  #   environment:
-  #     KONG_PROXY_LISTEN: 0.0.0.0:8000
-  #     KONG_ADMIN_LISTEN: 0.0.0.0:8001
-  #   ports:
-  #     - "8000:8000"
-  #     - "8001:8001"
+  kong:
+    image: kong/kong-gateway:3.4.3.2
+    environment:
+      KONG_PROXY_LISTEN: 0.0.0.0:8000
+      KONG_ADMIN_LISTEN: 0.0.0.0:8001
+      # KONG_PG_HOST: kong-database
+      # KONG_PG_PASSWORD: kong
+      # ADMIN_TOKEN: kejusupersecret
+      KONG_DATABASE: off
+      KONG_DECLARATIVE_CONFIG: /kong.yml
+    ports:
+      - "8000:8000"
+      - "8001:8001"
+      - "8002:8002"
+    volumes:
+      - ./services/kong-data/kong.yml:/kong.yml
+    # command: kong migrations bootstrap
+  # kong-deck:
+  #   image: kong/deck:latest
   #   volumes:
-  #     - ./services/kong-data:/usr/local/kong/declarative
+  #     - ./services/deck:/deck
+  #   command: --verbose 100 --kong-addr http://kong:8001 --headers kong-admin-token:kejusupersecret -o /deck/kong.yaml dump
+  
+  # kong-database:
+  #   image: postgres:14.10
+  #   environment:
+  #     POSTGRES_USER: kong
+  #     POSTGRES_PASSWORD: kong
+  #     POSTGRES_DB: kong
+  #   healthcheck:
+  #     test: ["CMD", "pg_isready", "-U", "kong"]
+  #     interval: 5s
+  #     timeout: 5s
+  #     retries: 5
+  #   volumes:
+  #     - ./services/postgres-data:/var/lib/postgresql/data
+
+  api:
+    build:
+      context: .
+      args:
+        - APP=api
+    image: be-nest-micro/api
+    ports:
+      - "3001:3001"
+    environment:
+      - DATABASE_URI=mongodb://mongo:27017
+      - BROKER_URI=amqp://rabbitmq:5672
+    volumes:
+      - ./public/users/img:/public/users/img
+    depends_on:
+      - kong
+  auth:
+    build:
+      context: .
+      args:
+        - APP=auth
+    image: be-nest-micro/auth
+    ports:
+      - "3002:3002"
+    environment:
+      - DATABASE_URI=mongodb://mongo:27017
+      - BROKER_URI=amqp://rabbitmq:5672
+    depends_on:
+      - kong
+  stream:
+    build:
+      context: .
+      args:
+        - APP=stream
+    image: be-nest-micro/stream
+    ports:
+      - "3003:3003"
+    environment:
+      - DATABASE_URI=mongodb://mongo:27017
+      - BROKER_URI=amqp://rabbitmq:5672
+    depends_on:
+      - kong
 
 
