@@ -16,6 +16,8 @@ services:
       - "15672:15672"
     volumes:
       - ./services/rabbitmq-data:/var/lib/rabbitmq
+      - ./services/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf
+      - ./services/advanced.config:/etc/rabbitmq/advanced.config
 
   # kong:
   #   image: kong/kong-gateway:3.4.3.2
