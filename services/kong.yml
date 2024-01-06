@@ -1,0 +1,444 @@
+_format_version: "3.0"
+plugins:
+- config:
+    add:
+      body: []
+      headers: []
+      querystring: []
+    append:
+      body: []
+      headers: []
+      querystring: []
+    http_method: null
+    remove:
+      body: []
+      headers: []
+      querystring: []
+    rename:
+      body: []
+      headers: []
+      querystring: []
+    replace:
+      body: []
+      headers: []
+      querystring: []
+      uri: /createProfile
+  enabled: true
+  instance_name: prefix_createProfile
+  name: request-transformer
+  protocols:
+  - grpc
+  - grpcs
+  - http
+  - https
+  route: createProfile
+  service: api
+  tags:
+  - reroute
+  - profile
+- config:
+    add:
+      body: []
+      headers: []
+      querystring: []
+    append:
+      body: []
+      headers: []
+      querystring: []
+    http_method: null
+    remove:
+      body: []
+      headers: []
+      querystring: []
+    rename:
+      body: []
+      headers: []
+      querystring: []
+    replace:
+      body: []
+      headers: []
+      querystring: []
+      uri: /getProfile
+  enabled: true
+  instance_name: prefix_getProfile
+  name: request-transformer
+  protocols:
+  - grpc
+  - grpcs
+  - http
+  - https
+  route: getProfile
+  service: api
+  tags:
+  - reroute
+  - profile
+- config:
+    add:
+      body: []
+      headers: []
+      querystring: []
+    append:
+      body: []
+      headers: []
+      querystring: []
+    http_method: null
+    remove:
+      body: []
+      headers: []
+      querystring: []
+    rename:
+      body: []
+      headers: []
+      querystring: []
+    replace:
+      body: []
+      headers: []
+      querystring: []
+      uri: /login
+  enabled: true
+  instance_name: prefix_login
+  name: request-transformer
+  protocols:
+  - grpc
+  - grpcs
+  - http
+  - https
+  route: login
+  service: auth
+  tags:
+  - reroute
+  - auth
+- config:
+    add:
+      body: []
+      headers: []
+      querystring: []
+    append:
+      body: []
+      headers: []
+      querystring: []
+    http_method: null
+    remove:
+      body: []
+      headers: []
+      querystring: []
+    rename:
+      body: []
+      headers: []
+      querystring: []
+    replace:
+      body: []
+      headers: []
+      querystring: []
+      uri: /register
+  enabled: true
+  instance_name: prefix_register
+  name: request-transformer
+  protocols:
+  - grpc
+  - grpcs
+  - http
+  - https
+  route: register
+  service: auth
+  tags:
+  - reroute
+  - auth
+- config:
+    add:
+      body: []
+      headers: []
+      querystring: []
+    append:
+      body: []
+      headers: []
+      querystring: []
+    http_method: null
+    remove:
+      body: []
+      headers: []
+      querystring: []
+    rename:
+      body: []
+      headers: []
+      querystring: []
+    replace:
+      body: []
+      headers: []
+      querystring: []
+      uri: /sendMessage
+  enabled: true
+  instance_name: prefix_sendMessage
+  name: request-transformer
+  protocols:
+  - grpc
+  - grpcs
+  - http
+  - https
+  route: sendMessage
+  service: api
+  tags:
+  - reroute
+  - message
+- config:
+    add:
+      body: []
+      headers: []
+      querystring: []
+    append:
+      body: []
+      headers: []
+      querystring: []
+    http_method: null
+    remove:
+      body: []
+      headers: []
+      querystring: []
+    rename:
+      body: []
+      headers: []
+      querystring: []
+    replace:
+      body: []
+      headers: []
+      querystring: []
+      uri: /updateProfile
+  enabled: true
+  instance_name: prefix_updateProfile
+  name: request-transformer
+  protocols:
+  - grpc
+  - grpcs
+  - http
+  - https
+  route: updateProfile
+  service: api
+  tags:
+  - reroute
+  - profile
+- config:
+    add:
+      body: []
+      headers: []
+      querystring: []
+    append:
+      body: []
+      headers: []
+      querystring: []
+    http_method: null
+    remove:
+      body: []
+      headers: []
+      querystring: []
+    rename:
+      body: []
+      headers: []
+      querystring: []
+    replace:
+      body: []
+      headers: []
+      querystring: []
+      uri: /viewMessages
+  enabled: true
+  instance_name: prefix_viewMessage
+  name: request-transformer
+  protocols:
+  - grpc
+  - grpcs
+  - http
+  - https
+  route: viewMessages
+  service: api
+  tags:
+  - reroute
+  - message
+services:
+- connect_timeout: 60000
+  enabled: true
+  host: api
+  name: api
+  port: 3001
+  protocol: http
+  read_timeout: 60000
+  retries: 5
+  routes:
+  - https_redirect_status_code: 426
+    methods:
+    - POST
+    - OPTIONS
+    name: createProfile
+    path_handling: v0
+    paths:
+    - /api/createProfile
+    preserve_host: false
+    protocols:
+    - http
+    - https
+    regex_priority: 0
+    request_buffering: true
+    response_buffering: true
+    strip_path: false
+    tags:
+    - profile
+  - https_redirect_status_code: 426
+    methods:
+    - GET
+    name: getProfile
+    path_handling: v0
+    paths:
+    - /api/getProfile
+    preserve_host: false
+    protocols:
+    - http
+    - https
+    regex_priority: 0
+    request_buffering: true
+    response_buffering: true
+    strip_path: false
+    tags:
+    - profile
+  - https_redirect_status_code: 426
+    methods:
+    - POST
+    - OPTIONS
+    name: sendMessage
+    path_handling: v0
+    paths:
+    - /api/sendMessage
+    preserve_host: false
+    protocols:
+    - http
+    - https
+    regex_priority: 0
+    request_buffering: true
+    response_buffering: true
+    strip_path: false
+    tags:
+    - message
+  - https_redirect_status_code: 426
+    methods:
+    - PUT
+    - OPTIONS
+    name: updateProfile
+    path_handling: v0
+    paths:
+    - /api/updateProfile
+    preserve_host: false
+    protocols:
+    - http
+    - https
+    regex_priority: 0
+    request_buffering: true
+    response_buffering: true
+    strip_path: false
+    tags:
+    - profile
+  - https_redirect_status_code: 426
+    methods:
+    - GET
+    name: userImage
+    path_handling: v1
+    paths:
+    - /users/img/
+    preserve_host: false
+    protocols:
+    - http
+    - https
+    regex_priority: 0
+    request_buffering: true
+    response_buffering: true
+    strip_path: false
+    tags:
+    - profile
+  - https_redirect_status_code: 426
+    methods:
+    - GET
+    name: viewMessages
+    path_handling: v0
+    paths:
+    - /api/viewMessages
+    preserve_host: false
+    protocols:
+    - http
+    - https
+    regex_priority: 0
+    request_buffering: true
+    response_buffering: true
+    strip_path: false
+    tags:
+    - message
+  write_timeout: 60000
+- connect_timeout: 60000
+  enabled: true
+  host: auth
+  name: auth
+  port: 3001
+  protocol: http
+  read_timeout: 60000
+  retries: 5
+  routes:
+  - https_redirect_status_code: 426
+    methods:
+    - POST
+    - OPTIONS
+    name: login
+    path_handling: v0
+    paths:
+    - /api/login
+    preserve_host: false
+    protocols:
+    - http
+    - https
+    regex_priority: 0
+    request_buffering: true
+    response_buffering: true
+    strip_path: false
+    tags:
+    - auth
+  - https_redirect_status_code: 426
+    methods:
+    - POST
+    - OPTIONS
+    name: register
+    path_handling: v0
+    paths:
+    - /api/register
+    preserve_host: false
+    protocols:
+    - http
+    - https
+    regex_priority: 0
+    request_buffering: true
+    response_buffering: true
+    strip_path: false
+    tags:
+    - auth
+  write_timeout: 60000
+- connect_timeout: 60000
+  enabled: true
+  host: stream
+  name: stream
+  port: 3003
+  protocol: ws
+  read_timeout: 60000
+  retries: 5
+  routes:
+  - headers:
+      Upgrade:
+      - websocket
+    https_redirect_status_code: 426
+    name: stream
+    path_handling: v1
+    paths:
+    - /
+    preserve_host: false
+    protocols:
+    - ws
+    regex_priority: 0
+    request_buffering: true
+    response_buffering: true
+    strip_path: false
+    tags:
+    - stream
+    - message
+  write_timeout: 60000
