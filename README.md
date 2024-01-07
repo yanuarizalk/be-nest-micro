@@ -59,3 +59,17 @@ make sure the instance is running.
 
 Because of incapability of swagging websocket, you can try it on my [Postman workspace](https://www.postman.com/blue-crescent-479369/workspace/yanuar-s-space)
 
+## FAQ
+
+**Q:** Talk about data flow, it seems in api the data are queried straight, and doesn't use microservice thing, why?
+
+**A:** It's indeed need to be distributed to the next service like that. But it can cause network congestion just because to get simple thing, alternatively, the service (sub app) can be scaled too to achieve same goal. In other words, i use the broker for async purpose like chatting, where it's possible to have some serious delay because of queuing behaviour.
+
+**Q:** Why doesn't use socket.io room feature? and instead you use traditional websocket transport.
+
+**A:** Rooms stand on server side so it cost memory to process & store, imagine if we have thousands of user at time, with rooms u need to allocate for each of user who's communicate to few friends exponentially, from here i hope you got the points. That's why for private message we dont need to use room, as room is intended to be grouped message channel.
+
+
+**Q:** There's a api gateway service, kong isn't it? what are they for?  
+
+**A:** As we use micro service, api gateway hold the important role to manage them, such as for abstraction layer between upstream & client, reduce the pain of managing route through service api itself, wrap them up, integrate with tracing to give better analytical usage, security purpose & etc.
