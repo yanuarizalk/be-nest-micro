@@ -1,5 +1,4 @@
 import { Module } from '@nestjs/common';
-import { StreamController } from './stream.controller';
 import { StreamService } from './stream.service';
 import { StreamGateway } from './stream.gateway';
 import { UserModule } from '@app/user';
@@ -8,7 +7,11 @@ import configuration from 'config/configuration';
 import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { JwtModule } from '@nestjs/jwt';
-import { MicroserviceOptions, RmqOptions, Transport } from '@nestjs/microservices';
+import {
+  MicroserviceOptions,
+  RmqOptions,
+  Transport,
+} from '@nestjs/microservices';
 import { ConsumerController } from './consumer.controller';
 import { APP_GUARD } from '@nestjs/core';
 import { JwtGuard } from '@app/modules/auth/jwt.guard';

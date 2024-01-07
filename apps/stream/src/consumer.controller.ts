@@ -37,7 +37,7 @@ export class ConsumerController {
               socket.data.user?.sub == v.sender ||
               socket.data.user?.sub == v.receiver
             ) {
-              this.streamGateway.server.emit(socket.id, data);
+              socket.emit('message', data);
               Logger.debug(
                 `saved message emitted to socket with event id '${socket.id}'`,
               );
