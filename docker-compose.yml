@@ -33,7 +33,7 @@ services:
       - "8001:8001"
       - "8002:8002"
     volumes:
-      - ./services/kong-data/kong.yml:/kong.yml
+      - ./services/kong.yml:/kong.yml
     # command: kong migrations bootstrap
   # kong-deck:
   #   image: kong/deck:latest
