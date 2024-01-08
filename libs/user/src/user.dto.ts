@@ -16,6 +16,12 @@ enum Gender {
 }
 
 export class CreateUserDto {
+  constructor(data: CreateUserDto) {
+    this.email = data.email;
+    this.username = data.username;
+    this.password = data.password;
+  }
+
   @ApiProperty({
     example: 'dummy.01@yanuarizal.net',
     description: "User's email",

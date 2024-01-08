@@ -24,13 +24,16 @@ export class PublishMessageDto {
 }
 
 export class ViewMessagesDto {
-  constructor(data: object = null) {
-    if (data) {
-      this.page = data['page'];
-      this.pageSize = data['pageSize'];
-      this.userId = data['userId'];
-      this.ownerId = data['ownerId'];
-    }
+  constructor(data: object = {}) {
+    this.fill(data);
+  }
+
+  fill(data: object = {}) {
+    if (data['page']) this.page = data['page'];
+    else this.page = 1;
+    if (data['pageSize']) this.pageSize = data['pageSize'];
+    else this.pageSize = 10;
+    if (data['userId']) this.userId = data['userId'];
   }
 
   @ApiProperty({

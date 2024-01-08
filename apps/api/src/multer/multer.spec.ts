@@ -1,7 +1,7 @@
-import { Multer } from './multer';
+import { UserMulterOption } from './multer';
 
 describe('Multer', () => {
   it('should be defined', () => {
-    expect(new Multer()).toBeDefined();
+    expect(new UserMulterOption()).toBeDefined();
   });
 });
