@@ -62,7 +62,9 @@ export class AuthController {
 
     return {
       token: await this.jwtService.signAsync(payload),
-      user,
+      _id: user._id,
+      email: user.email,
+      profile: user.profile,
     };
   }
 }

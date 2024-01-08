@@ -65,7 +65,7 @@ export class ApiController {
       throw ERR_PROFILE_NOT_FOUND;
     }
 
-    // return detailed == 'true' ? user : user.profileOnly();
+    return user;
   }
 
   @Post('createProfile')

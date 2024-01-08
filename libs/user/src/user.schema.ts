@@ -20,21 +20,8 @@ export class User extends Document {
   password: string;
 }
 
-export class UserProfile extends Document {
-  email: string;
-  password: string;
-
+export class UserProfile extends User {
   profile: Profile & Profile[];
-  /* userId: string;
-  about: string;
-  interests: string[];
-  displayName: string;
-  gender: string;
-  birthDate: Date;
-  horoscope: string;
-  zodiac: string;
-  height: number;
-  weight: number; */
 
   profileOnly() {}
 }
