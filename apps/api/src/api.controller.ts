@@ -17,7 +17,6 @@ import {
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
-import { UpsertProfileDto } from '@app/user/user.dto';
 import { UserService } from '@app/user';
 import { FileInterceptor } from '@nestjs/platform-express';
 import {
@@ -33,9 +32,11 @@ import { PublishMessageDto, ViewMessagesDto } from '@app/message/message.dto';
 import { MessageService } from '@app/message';
 import { validate } from 'class-validator';
 import { plainToClassFromExist } from 'class-transformer';
+import { ProfileService } from '@app/user/profile.service';
+import { CreateProfileDto, UpdateProfileDto } from '@app/user/profile.dto';
 
 const ERR_INVALID_ID = new BadRequestException('Invalid identifier');
-const ERR_USER_NOT_FOUND = new NotFoundException('User not found');
+const ERR_PROFILE_NOT_FOUND = new NotFoundException('User not found');
 
 @ApiTags('user')
 @ApiBearerAuth()
@@ -43,7 +44,7 @@ const ERR_USER_NOT_FOUND = new NotFoundException('User not found');
 export class ApiController {
   // constructor(private readonly apiService: ApiService) {}
   constructor(
-    private readonly userService: UserService,
+    private readonly profileService: ProfileService,
     private readonly messageService: MessageService,
   ) {}
 
@@ -52,36 +53,32 @@ export class ApiController {
     name: 'id',
     required: false,
   })
-  @ApiQuery({
-    name: 'detail',
-    description: 'bool. Give detailed user, show username & email',
-    example: 'true',
-    required: false,
-  })
-  async getProfile(
-    @Param('id') id: string,
-    @Request() req: Request,
-    @Query('detail') detailed: string,
-  ) {
+  async getProfile(@Param('id') id: string, @Request() req: Request) {
     if (!id) {
-      id = req['user'].sub;
+      id = req['user'].profileId;
     } else {
       if (!Types.ObjectId.isValid(id)) throw ERR_INVALID_ID;
     }
 
-    const user = await this.userService.findId(id);
+    const user = await this.profileService.findId(id);
     if (!user) {
-      throw ERR_USER_NOT_FOUND;
+      throw ERR_PROFILE_NOT_FOUND;
     }
 
-    return detailed == 'true' ? user : user.profileOnly();
+    // return detailed == 'true' ? user : user.profileOnly();
   }
 
   @Post('createProfile')
-  createProfile(@Request() req: Request, @Body() dto: UpsertProfileDto) {
-    const updatedProfile = this.userService.update(req['user'].sub, dto);
+  createProfile(@Request() req: Request, @Body() dto: CreateProfileDto) {
+    if (!dto.username) {
+      // todo: prefix username should be reserved by system only
+      dto.username = `username${this.profileService.count()}`;
+    }
+    dto.userId = req['user'].sub;
 
-    return updatedProfile;
+    const createdProfile = this.profileService.create(dto);
+
+    return createdProfile;
   }
 
   @ApiConsumes('multipart/form-data')
@@ -89,7 +86,7 @@ export class ApiController {
   @UseInterceptors(FileInterceptor('file'))
   updateProfile(
     @Request() req: Request,
-    @Body() dto: UpsertProfileDto,
+    @Body() dto: UpdateProfileDto,
     @UploadedFile(
       new ParseFilePipe({
         fileIsRequired: false,
@@ -98,7 +95,15 @@ export class ApiController {
     )
     file: Express.Multer.File,
   ) {
-    const updatedProfile = this.userService.update(req['user'].sub, dto);
+    if (dto.username == '' || dto.username == null) {
+      dto.username = undefined;
+    }
+    dto.userId = req['user'].sub;
+
+    const updatedProfile = this.profileService.update(
+      req['user'].profileId,
+      dto,
+    );
 
     return updatedProfile;
   }
@@ -123,20 +128,20 @@ export class ApiController {
       throw new BadRequestException(errMessages);
     }
 
-    dto.ownerId = req['user'].sub;
+    dto.ownerId = req['user'].profileId;
 
     return this.messageService.view(dto);
   }
 
   @Post('sendMessage')
   async sendMessage(@Body() dto: PublishMessageDto, @Request() req: Request) {
-    dto.sender = req['user'].sub;
+    dto.sender = req['user'].profileId;
 
     if (!Types.ObjectId.isValid(dto.receiver)) throw ERR_INVALID_ID;
 
-    const receiver = await this.userService.findId(dto.receiver);
+    const receiver = await this.profileService.findId(dto.receiver);
     if (!receiver) {
-      throw ERR_USER_NOT_FOUND;
+      throw ERR_PROFILE_NOT_FOUND;
     }
 
     Logger.debug(`User ${dto.sender} send a messsage to ${dto.receiver}`);

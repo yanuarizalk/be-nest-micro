@@ -1,7 +1,7 @@
 import { MessageService } from '@app/message';
 import { PublishMessageDto } from '@app/message/message.dto';
 import { JwtGuard } from '@app/modules/auth/jwt.guard';
-import { UserService } from '@app/user';
+import { ProfileService } from '@app/user/profile.service';
 import {
   BadRequestException,
   Injectable,
@@ -30,7 +30,7 @@ export class StreamGateway implements OnGatewayInit, OnGatewayConnection {
 
   constructor(
     private jwtGuard: JwtGuard,
-    private userService: UserService,
+    private profileService: ProfileService,
     private messageService: MessageService,
   ) {}
 
@@ -63,14 +63,14 @@ export class StreamGateway implements OnGatewayInit, OnGatewayConnection {
       return;
     }
 
-    dto.sender = client.data['user'].sub;
+    dto.sender = client.data['user'].profileId;
 
     if (!Types.ObjectId.isValid(dto.receiver)) {
       client.send(ERR_INVALID_ID.getResponse());
       return;
     }
 
-    const receiver = await this.userService.findId(dto.receiver);
+    const receiver = await this.profileService.findId(dto.receiver);
     if (!receiver) {
       client.send(ERR_USER_NOT_FOUND.getResponse());
       return;

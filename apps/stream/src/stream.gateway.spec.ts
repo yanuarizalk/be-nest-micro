@@ -4,6 +4,7 @@ import { JwtGuard } from '@app/modules/auth/jwt.guard';
 import { UserService } from '@app/user';
 import { MessageService } from '@app/message';
 import { Socket } from 'socket.io';
+import { ProfileService } from '@app/user/profile.service';
 
 describe('ChatGateway', () => {
   let gateway: StreamGateway;
@@ -24,6 +25,16 @@ describe('ChatGateway', () => {
             update: jest.fn(),
             create: jest.fn(),
             findOne: jest.fn(),
+          },
+        },
+        {
+          provide: ProfileService,
+          useValue: {
+            findId: jest.fn(),
+            findUserId: jest.fn(),
+            update: jest.fn(),
+            create: jest.fn(),
+            count: jest.fn(),
           },
         },
         {

@@ -11,11 +11,8 @@ export class UserMulterOption implements MulterOptionsFactory {
       storage: diskStorage({
         destination: join(process.cwd(), 'public', 'users', 'img'),
         filename: function (req, file, callback) {
-          callback(null, req['user'].sub);
+          callback(null, req['user'].profileId);
         },
-        /* filename: filename(req, file, callback) {
-                    return
-                }, */
       }),
     };
   }

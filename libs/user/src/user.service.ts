@@ -1,22 +1,38 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { User } from './user.schema';
+import { User, UserProfile } from './user.schema';
 import { Model, Types } from 'mongoose';
-import { CreateUserDto, UpsertProfileDto } from './user.dto';
+import { CreateUserDto } from './user.dto';
+import { Profile } from './profile.schema';
 
 @Injectable()
 export class UserService {
-  constructor(@InjectModel(User.name) private userModel: Model<User>) {}
+  constructor(
+    @InjectModel(User.name) private userModel: Model<User | UserProfile>,
+    @InjectModel(Profile.name) private profileModel: Model<Profile>,
+  ) {}
 
-  async create(dto: CreateUserDto): Promise<User> {
-    const createdCat = new this.userModel(dto);
-    return createdCat.save();
-  }
+  async create(dto: CreateUserDto) {
+    const createdUser = await new this.userModel(dto).save();
+    if (!createdUser._id) {
+      Logger.error(`unable to save user`, createdUser);
+      return createdUser;
+    }
 
-  async update(id: Types.ObjectId, dto: UpsertProfileDto): Promise<User> {
-    const existingUser = await this.userModel.findById(id).exec();
+    const createdProfile = await new this.profileModel({
+      _id: createdUser._id,
+      userId: createdUser._id,
+      username: dto.username,
+    }).save();
+    if (!createdProfile._id) {
+      Logger.error(`unable to save user`, createdProfile);
+      return createdProfile;
+    }
 
-    return existingUser.updateOne(dto);
+    return {
+      user: createdUser,
+      profile: createdProfile,
+    };
   }
 
   async findId(id: string): Promise<User> {
@@ -25,8 +41,49 @@ export class UserService {
       .exec();
   }
 
-  async findOne(username, email: string): Promise<User> {
-    return this.userModel
+  async findOne(username: string, email: string): Promise<UserProfile> {
+    const result = await this.userModel
+      .aggregate([
+        {
+          $addFields: {
+            userId: {
+              $toString: '$_id',
+            },
+          },
+        },
+        {
+          $lookup: {
+            from: 'profiles',
+            localField: 'userId',
+            foreignField: 'userId',
+            as: 'profile',
+          },
+        },
+        {
+          $unwind: '$profile',
+        },
+        {
+          $match: {
+            $or: [
+              {
+                'profile.username': username,
+              },
+              {
+                email: email,
+              },
+            ],
+          },
+        },
+      ])
+      .limit(1)
+      .exec();
+
+    if (result.length == 0) {
+      return null;
+    }
+
+    return result[0];
+    /* return this.userModel
       .findOne({
         $or: [
           {
@@ -37,6 +94,6 @@ export class UserService {
           },
         ],
       })
-      .exec();
+      .exec(); */
   }
 }

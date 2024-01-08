@@ -4,6 +4,7 @@ import { UserService } from '@app/user';
 import { MessageService } from '@app/message';
 import { BadRequestException } from '@nestjs/common';
 import { Messages } from '@app/message/message.schema';
+import { ProfileService } from '@app/user/profile.service';
 // import { ModuleMocker } from 'jest-mock';
 
 // const moduleMocker = new ModuleMocker(global);
@@ -28,6 +29,16 @@ describe('ApiController', () => {
           },
         },
         {
+          provide: ProfileService,
+          useValue: {
+            findId: jest.fn(),
+            findUserId: jest.fn(),
+            update: jest.fn(),
+            create: jest.fn(),
+            count: jest.fn(),
+          },
+        },
+        {
           provide: MessageService,
           useValue: {
             view: jest.fn().mockResolvedValue(new Messages()),
@@ -47,29 +58,21 @@ describe('ApiController', () => {
   describe('get profile', () => {
     it('should be invalid id', async () => {
       await expect(
-        apiController.getProfile(
-          'user id',
-          {
-            user: {
-              sub: 'uid',
-            },
-          } as unknown as Request,
-          'false',
-        ),
+        apiController.getProfile('user id', {
+          user: {
+            sub: 'uid',
+          },
+        } as unknown as Request),
       ).rejects.toThrow('Invalid identifier');
     });
 
     it('should be not found', async () => {
       await expect(
-        apiController.getProfile(
-          undefined,
-          {
-            user: {
-              sub: 'missing',
-            },
-          } as unknown as Request,
-          'false',
-        ),
+        apiController.getProfile(undefined, {
+          user: {
+            sub: 'missing',
+          },
+        } as unknown as Request),
       ).rejects.toThrow('User not found');
     });
   });

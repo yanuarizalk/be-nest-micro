@@ -56,7 +56,8 @@ export class AuthController {
 
     const payload = {
       sub: user._id,
-      username: user.username,
+      username: user.profile.username,
+      profileId: user.profile._id,
     };
 
     return {

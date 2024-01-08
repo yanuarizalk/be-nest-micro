@@ -28,8 +28,8 @@ export class ConsumerController {
           let found = 0;
           sockets.forEach((socket) => {
             if (
-              socket.data.user?.sub == v.sender ||
-              socket.data.user?.sub == v.receiver
+              socket.data.user?.profileId == v.sender ||
+              socket.data.user?.profileId == v.receiver
             ) {
               socket.emit('message', data);
               Logger.debug(

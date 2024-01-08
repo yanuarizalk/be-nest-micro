@@ -18,15 +18,15 @@ export class MessageService {
   async view(dto: ViewMessagesDto): Promise<Messages> {
     let q = this.messageModel.where().getFilter();
 
-    if (dto.userId) {
+    if (dto.profileId) {
       q = {
         $or: [
           {
             sender: dto.ownerId,
-            receiver: dto.userId,
+            receiver: dto.profileId,
           },
           {
-            sender: dto.userId,
+            sender: dto.profileId,
             receiver: dto.ownerId,
           },
         ],

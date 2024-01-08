@@ -12,7 +12,7 @@ export class PublishMessageDto {
 
   @ApiProperty({
     example: '6594f3457beb040001f928db',
-    description: 'User id of receiver',
+    description: 'Profile id of receiver',
     required: true,
   })
   @IsNotEmpty()
@@ -33,7 +33,7 @@ export class ViewMessagesDto {
     else this.page = 1;
     if (data['pageSize']) this.pageSize = data['pageSize'];
     else this.pageSize = 10;
-    if (data['userId']) this.userId = data['userId'];
+    if (data['profileId']) this.profileId = data['profileId'];
   }
 
   @ApiProperty({
@@ -57,10 +57,10 @@ export class ViewMessagesDto {
 
   @ApiProperty({
     example: '6594f3457beb040001f928db',
-    description: 'User id',
+    description: 'Profile id of specific user',
     required: false,
   })
-  userId: string;
+  profileId: string;
 
   @ApiProperty({
     example: new Date(),
@@ -69,5 +69,5 @@ export class ViewMessagesDto {
   })
   lastFetch: Date;
 
-  ownerId: string; // authenticated user
+  ownerId: string; // authenticated profile id of user
 }

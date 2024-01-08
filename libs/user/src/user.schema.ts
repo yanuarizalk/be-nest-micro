@@ -1,24 +1,12 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, HydratedDocument } from 'mongoose';
 import * as bcrypt from 'bcrypt';
-import {
-  Horoscope,
-  HoroscopeSign,
-  Zodiac,
-  ZodiacSign,
-} from './datesign/datesign';
+import { Profile } from './profile.schema';
 
 export type UserDocument = HydratedDocument<User>;
 
 @Schema()
 export class User extends Document {
-  @Prop({
-    required: true,
-    unique: true,
-    index: true,
-  })
-  username: string;
-
   @Prop({
     required: true,
     unique: true,
@@ -30,39 +18,23 @@ export class User extends Document {
     required: true,
   })
   password: string;
+}
 
-  @Prop([String])
+export class UserProfile extends Document {
+  email: string;
+  password: string;
+
+  profile: Profile & Profile[];
+  /* userId: string;
+  about: string;
   interests: string[];
-
-  @Prop()
   displayName: string;
-
-  @Prop({
-    type: String,
-    enum: ['M', 'F'],
-  })
   gender: string;
-
-  @Prop(Date)
   birthDate: Date;
-
-  @Prop({
-    type: String,
-    enum: Horoscope,
-  })
   horoscope: string;
-
-  @Prop({
-    type: String,
-    enum: Zodiac,
-  })
   zodiac: string;
-
-  @Prop()
   height: number;
-
-  @Prop()
-  weight: number;
+  weight: number; */
 
   profileOnly() {}
 }
@@ -91,31 +63,6 @@ export function UserFactory() {
     this.password = await bcrypt.hash(String(this.password), 10);
 
     next();
-  });
-  schema.pre('updateOne', function () {
-    let birthDate = this.get('birthDate');
-    const interests = this.get('interests');
-
-    if (birthDate) {
-      if (typeof birthDate === 'string') {
-        birthDate = new Date(birthDate);
-      }
-
-      if (!isNaN(birthDate)) {
-        this.set({ horoscope: HoroscopeSign(birthDate) });
-        this.set({ zodiac: ZodiacSign(birthDate) });
-      }
-    }
-
-    if (interests && typeof interests === 'string') {
-      const v: string[] = [];
-      interests.split(',').forEach((interest) => {
-        interest = interest.trim().toLowerCase();
-        v.push(interest.charAt(0).toUpperCase() + interest.slice(1));
-      });
-
-      this.set({ interests: v });
-    }
   });
 
   schema.set('toJSON', {
