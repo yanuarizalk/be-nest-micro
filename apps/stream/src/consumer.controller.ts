@@ -2,13 +2,7 @@ import { MessageService } from '@app/message';
 import { PublishMessageDto } from '@app/message/message.dto';
 import { Message } from '@app/message/message.schema';
 import { Controller, Logger } from '@nestjs/common';
-import {
-  Ctx,
-  EventPattern,
-  Payload,
-  RmqContext,
-  Transport,
-} from '@nestjs/microservices';
+import { Ctx, EventPattern, Payload, RmqContext } from '@nestjs/microservices';
 import { StreamGateway } from './stream.gateway';
 
 // const MAX_RETRIES = 3;
@@ -32,7 +26,7 @@ export class ConsumerController {
 
         this.streamGateway.server.fetchSockets().then((sockets) => {
           let found = 0;
-          sockets.every((socket) => {
+          sockets.forEach((socket) => {
             if (
               socket.data.user?.sub == v.sender ||
               socket.data.user?.sub == v.receiver
@@ -43,12 +37,6 @@ export class ConsumerController {
               );
               found++;
             }
-
-            if (found >= 2) {
-              return false;
-            }
-
-            return true;
           });
           if (!found) Logger.debug(`no client socket found to send message`);
         });
