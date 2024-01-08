@@ -17,7 +17,6 @@ import {
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
-import { ApiService } from './api.service';
 import { UpsertProfileDto } from '@app/user/user.dto';
 import { UserService } from '@app/user';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -33,7 +32,7 @@ import { Types } from 'mongoose';
 import { PublishMessageDto, ViewMessagesDto } from '@app/message/message.dto';
 import { MessageService } from '@app/message';
 import { validate } from 'class-validator';
-import { plainToClass } from 'class-transformer';
+import { plainToClassFromExist } from 'class-transformer';
 
 const ERR_INVALID_ID = new BadRequestException('Invalid identifier');
 const ERR_USER_NOT_FOUND = new NotFoundException('User not found');
@@ -44,7 +43,6 @@ const ERR_USER_NOT_FOUND = new NotFoundException('User not found');
 export class ApiController {
   // constructor(private readonly apiService: ApiService) {}
   constructor(
-    private readonly apiService: ApiService,
     private readonly userService: UserService,
     private readonly messageService: MessageService,
   ) {}
@@ -108,7 +106,7 @@ export class ApiController {
   @Get('viewMessages')
   @ApiQuery({ type: ViewMessagesDto })
   async viewMessages(@Query() query, @Request() req: Request) {
-    const dto = plainToClass(ViewMessagesDto, query, {
+    const dto = plainToClassFromExist(new ViewMessagesDto(), query, {
       enableImplicitConversion: true,
     });
 

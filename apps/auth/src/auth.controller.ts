@@ -1,16 +1,25 @@
-import { Body, Controller, HttpException, Logger, Post } from '@nestjs/common';
-import { AuthService } from './auth.service';
+import {
+  Body,
+  Controller,
+  HttpException,
+  Logger,
+  NotFoundException,
+  Post,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { CreateUserDto } from '@app/user/user.dto';
 import { UserService } from '@app/user';
 import { LoginDto } from './auth.tdo';
+import * as bcrypt from 'bcrypt';
+import { JwtService } from '@nestjs/jwt';
 
 @ApiTags('auth')
 @Controller()
 export class AuthController {
   constructor(
-    private readonly authService: AuthService,
     private readonly userService: UserService,
+    private readonly jwtService: JwtService,
   ) {}
 
   @Post('register')
@@ -35,7 +44,24 @@ export class AuthController {
   }
 
   @Post('login')
-  login(@Body() dto: LoginDto) {
-    return this.authService.login(dto.identity, dto.password);
+  async login(@Body() dto: LoginDto) {
+    const user = await this.userService.findOne(dto.identity, dto.identity);
+
+    if (!user) {
+      throw new NotFoundException();
+    }
+
+    if (await !bcrypt.compare(dto.password, user.password))
+      throw new UnauthorizedException();
+
+    const payload = {
+      sub: user._id,
+      username: user.username,
+    };
+
+    return {
+      token: await this.jwtService.signAsync(payload),
+      user,
+    };
   }
 }

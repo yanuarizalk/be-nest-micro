@@ -1,6 +1,5 @@
 import { Module } from '@nestjs/common';
 import { ApiController } from './api.controller';
-import { ApiService } from './api.service';
 import { UserModule } from '@app/user';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ConfigModule } from '@nestjs/config';
@@ -59,7 +58,6 @@ import { JwtGuard } from '@app/modules/auth/jwt.guard';
       provide: APP_GUARD,
       useClass: JwtGuard,
     },
-    ApiService,
   ],
 })
 export class ApiModule {}

@@ -1,5 +1,4 @@
 import { Module } from '@nestjs/common';
-import { StreamService } from './stream.service';
 import { StreamGateway } from './stream.gateway';
 import { UserModule } from '@app/user';
 import { CONSUMER_QUEUE, MessageModule } from '@app/message';
@@ -41,7 +40,6 @@ import { AppModule } from '@app/modules';
       useClass: JwtGuard,
     },
     JwtGuard,
-    StreamService,
     StreamGateway,
   ],
 })

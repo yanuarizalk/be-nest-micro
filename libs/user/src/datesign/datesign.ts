@@ -28,27 +28,6 @@ export enum Zodiac {
   Goat = 'Goat',
 }
 
-/* interface Date {
-    horoscope: () => string;
-    zodiac: () => string;
-}
-
-class DateSign implements IDateSign {
-    constructor(date: Date) {}
-
-    function horoscope(): string {
-        return '';
-    }
-} */
-
-/* Date.prototype['horoscope'] = function() {
-    return '';
-}
-
-Date.prototype.zodiac = function(): string {
-    return '';
-} */
-
 // ref: https://github.com/BesrourMS/ZodiacSigns/blob/main/index.js
 
 export function HoroscopeSign(date: Date): string {
