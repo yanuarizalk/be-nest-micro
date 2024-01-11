@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import {
   BadRequestException,
   Body,
@@ -11,7 +10,6 @@ import {
   ParseFilePipe,
   Post,
   Put,
-  Query,
   Request,
   UploadedFile,
   UseInterceptors,
@@ -23,6 +21,7 @@ import { ProfileService } from '@app/user/profile.service';
 import { CreateProfileDto, UpdateProfileDto } from '@app/user/profile.dto';
 import { rename } from 'fs/promises';
 import { join } from 'path';
+import configuration from 'config/configuration';
 // import { fileTypeFromFile } from 'file-type';
 let fileTypeFromFile;
 eval(`import('file-type')`).then((mod) => {
@@ -96,7 +95,11 @@ export class ProfileController {
     } else if (file?.path) {
       rename(
         file.path,
-        join(process.cwd(), 'public', 'users', 'img', req['user'].profileId),
+        join(
+          process.cwd(),
+          configuration().storage.profileImage,
+          req['user'].profileId,
+        ),
       )
         .then(() => Logger.debug(`image profile successfully uploaded`))
         .catch((reason) =>

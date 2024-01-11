@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import {
   BadRequestException,
   Body,
@@ -9,14 +8,17 @@ import {
   Post,
   Query,
   Request,
+  UploadedFiles,
+  UseInterceptors,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiQuery, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiConsumes, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { Types } from 'mongoose';
 import { PublishMessageDto, ViewMessagesDto } from '@app/message/message.dto';
 import { MessageService } from '@app/message';
 import { validate } from 'class-validator';
 import { plainToClassFromExist } from 'class-transformer';
 import { ProfileService } from '@app/user/profile.service';
+import { FilesInterceptor } from '@nestjs/platform-express';
 
 const ERR_INVALID_ID = new BadRequestException('Invalid identifier');
 const ERR_PROFILE_NOT_FOUND = new NotFoundException('User not found');
@@ -57,7 +59,13 @@ export class MessageController {
   }
 
   @Post('sendMessage')
-  async sendMessage(@Body() dto: PublishMessageDto, @Request() req: Request) {
+  @ApiConsumes('multipart/form-data', 'application/json')
+  @UseInterceptors(FilesInterceptor('files'))
+  async sendMessage(
+    @Body() dto: PublishMessageDto,
+    @Request() req: Request,
+    @UploadedFiles() files: Array<Express.Multer.File>,
+  ) {
     dto.sender = req['user'].profileId;
 
     if (!Types.ObjectId.isValid(dto.receiver)) throw ERR_INVALID_ID;
@@ -67,7 +75,11 @@ export class MessageController {
       throw ERR_PROFILE_NOT_FOUND;
     }
 
-    Logger.debug(`User ${dto.sender} send a messsage to ${dto.receiver}`);
+    Logger.log(`User ${dto.sender} send a messsage to ${dto.receiver}`);
+
+    if (files && files.length > 0) {
+      dto.files = files;
+    }
 
     return this.messageService.publish(dto);
   }

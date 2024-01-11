@@ -72,7 +72,6 @@ export function ProfileFactory() {
       }
     }
 
-    console.log(this.interests, typeof this.interests);
     if (this.interests && typeof this.interests === 'string') {
       const v: string[] = [];
       (this.interests as string).split(',').forEach((interest) => {

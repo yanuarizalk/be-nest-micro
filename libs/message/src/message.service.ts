@@ -83,7 +83,7 @@ export class MessageService {
   publish(dto: PublishMessageDto) {
     dto.dateTime = new Date();
 
-    return this.client.emit('consume', dto);
+    return this.client.emit('message', dto);
   }
 
   save(dto: PublishMessageDto): Promise<Message> {

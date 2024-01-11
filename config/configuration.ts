@@ -20,6 +20,12 @@ export default () => ({
     // disconnect client websocket if they'r not pinged within configured interval, in second
     timeout: parseInt(process.env.GATEWAY_TIMEOUT, 10) || Number(300),
   },
+  storage: {
+    adapter: 'local', // | 'minio', 'aws-cloud'
+    tempUpload: process.env.STORAGE_TEMP_UPLOAD ?? 'upload',
+    profileImage: process.env.STORAGE_PROFILE_IMAGE ?? 'public/user/img',
+    messageFile: process.env.STORAGE_MESSAGE_FILE ?? 'public/message',
+  },
   inProduction: function (): boolean {
     return /^prod$|^production$/i.test(this.env);
   },
