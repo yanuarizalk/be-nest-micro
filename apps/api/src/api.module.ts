@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { ApiController } from './api.controller';
+import { ProfileController } from './profile.controller';
 import { UserModule } from '@app/user';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ConfigModule } from '@nestjs/config';
@@ -13,6 +13,7 @@ import { MulterModule } from '@nestjs/platform-express';
 import { UserMulterOption } from './multer/multer';
 import { AppModule } from '@app/modules';
 import { JwtGuard } from '@app/modules/auth/jwt.guard';
+import { MessageController } from './message.controller';
 
 @Module({
   imports: [
@@ -52,7 +53,7 @@ import { JwtGuard } from '@app/modules/auth/jwt.guard';
       },
     }),
   ],
-  controllers: [ApiController],
+  controllers: [ProfileController, MessageController],
   providers: [
     {
       provide: APP_GUARD,

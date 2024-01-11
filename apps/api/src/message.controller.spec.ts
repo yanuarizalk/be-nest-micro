@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { ApiController } from './api.controller';
+import { MessageController } from './message.controller';
 import { UserService } from '@app/user';
 import { MessageService } from '@app/message';
 import { BadRequestException } from '@nestjs/common';
@@ -9,12 +9,12 @@ import { ProfileService } from '@app/user/profile.service';
 
 // const moduleMocker = new ModuleMocker(global);
 
-describe('ApiController', () => {
-  let apiController: ApiController;
+describe('MessageController', () => {
+  let apiController: MessageController;
 
   beforeEach(async () => {
     const app: TestingModule = await Test.createTestingModule({
-      controllers: [ApiController],
+      controllers: [MessageController],
       providers: [
         {
           provide: UserService,
@@ -52,29 +52,7 @@ describe('ApiController', () => {
       // .useClass(MockAuthGuard)
       .compile();
 
-    apiController = app.get<ApiController>(ApiController);
-  });
-
-  describe('get profile', () => {
-    it('should be invalid id', async () => {
-      await expect(
-        apiController.getProfile('user id', {
-          user: {
-            sub: 'uid',
-          },
-        } as unknown as Request),
-      ).rejects.toThrow('Invalid identifier');
-    });
-
-    it('should be not found', async () => {
-      await expect(
-        apiController.getProfile(undefined, {
-          user: {
-            sub: 'missing',
-          },
-        } as unknown as Request),
-      ).rejects.toThrow('User not found');
-    });
+    apiController = app.get<MessageController>(MessageController);
   });
 
   describe('view messages', () => {

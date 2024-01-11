@@ -4,8 +4,6 @@ import {
   Body,
   Controller,
   Get,
-  HttpException,
-  InternalServerErrorException,
   Logger,
   MaxFileSizeValidator,
   NotFoundException,
@@ -18,40 +16,24 @@ import {
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
-import { UserService } from '@app/user';
 import { FileInterceptor } from '@nestjs/platform-express';
-import {
-  ApiBearerAuth,
-  ApiBody,
-  ApiConsumes,
-  ApiParam,
-  ApiQuery,
-  ApiTags,
-} from '@nestjs/swagger';
+import { ApiBearerAuth, ApiConsumes, ApiParam, ApiTags } from '@nestjs/swagger';
 import { Types } from 'mongoose';
-import { PublishMessageDto, ViewMessagesDto } from '@app/message/message.dto';
-import { MessageService } from '@app/message';
-import { validate } from 'class-validator';
-import { plainToClassFromExist } from 'class-transformer';
 import { ProfileService } from '@app/user/profile.service';
 import { CreateProfileDto, UpdateProfileDto } from '@app/user/profile.dto';
 import { rename } from 'fs/promises';
 import { join } from 'path';
-import { rm } from 'fs';
 import { fileTypeFromFile } from 'file-type';
 
 const ERR_INVALID_ID = new BadRequestException('Invalid identifier');
 const ERR_PROFILE_NOT_FOUND = new NotFoundException('User not found');
 
-@ApiTags('user')
+@ApiTags('profile')
 @ApiBearerAuth()
 @Controller()
-export class ApiController {
+export class ProfileController {
   // constructor(private readonly apiService: ApiService) {}
-  constructor(
-    private readonly profileService: ProfileService,
-    private readonly messageService: MessageService,
-  ) {}
+  constructor(private readonly profileService: ProfileService) {}
 
   @Get(['getProfile', 'getProfile/:id'])
   @ApiParam({
@@ -124,46 +106,5 @@ export class ApiController {
     );
 
     return updatedProfile;
-  }
-
-  @Get('viewMessages')
-  @ApiQuery({ type: ViewMessagesDto })
-  async viewMessages(@Query() query, @Request() req: Request) {
-    const dto = plainToClassFromExist(new ViewMessagesDto(), query, {
-      enableImplicitConversion: true,
-    });
-
-    const validation = await validate(dto);
-
-    if (validation.length > 0) {
-      const errMessages: string[] = [];
-      validation.forEach((message) => {
-        if (message.constraints) {
-          errMessages.push(...Object.values(message.constraints));
-        }
-      });
-
-      throw new BadRequestException(errMessages);
-    }
-
-    dto.ownerId = req['user'].profileId;
-
-    return this.messageService.view(dto);
-  }
-
-  @Post('sendMessage')
-  async sendMessage(@Body() dto: PublishMessageDto, @Request() req: Request) {
-    dto.sender = req['user'].profileId;
-
-    if (!Types.ObjectId.isValid(dto.receiver)) throw ERR_INVALID_ID;
-
-    const receiver = await this.profileService.findId(dto.receiver);
-    if (!receiver) {
-      throw ERR_PROFILE_NOT_FOUND;
-    }
-
-    Logger.debug(`User ${dto.sender} send a messsage to ${dto.receiver}`);
-
-    return this.messageService.publish(dto);
   }
 }
