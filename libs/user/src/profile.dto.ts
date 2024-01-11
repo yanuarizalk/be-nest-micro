@@ -77,19 +77,10 @@ export class CreateProfileDto {
 
   @ApiProperty({
     example: ['Football', 'Dota2'],
-    description: 'The birth date of the user',
+    description: 'Things that make you excited',
     required: false,
   })
   interests: string[];
-
-  @ApiProperty({
-    type: 'string',
-    format: 'binary',
-    required: false,
-    description:
-      'Uploaded image can be accessed from $BASE_URL/users/img/:user_id',
-  })
-  file: any;
 }
 
 export class UpdateProfileDto {
@@ -148,17 +139,17 @@ export class UpdateProfileDto {
 
   @ApiProperty({
     example: ['Football', 'Dota2'].join(', '),
-    description: 'The birth date of the user',
+    description: 'Things that make you excited',
     required: false,
   })
-  interests: string | string[];
+  interests: string;
 
   @ApiProperty({
     type: 'string',
     format: 'binary',
     required: false,
     description:
-      'Uploaded image can be accessed from $BASE_URL/users/img/:user_id',
+      'Uploaded image can be accessed from $BASE_URL/users/img/:profile_id',
   })
   file: any;
 }

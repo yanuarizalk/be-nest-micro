@@ -44,3 +44,4 @@ settings.json
 services/mongo-data
 services/rabbitmq-data
 public/users/img
+upload

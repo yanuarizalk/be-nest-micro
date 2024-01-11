@@ -5,6 +5,7 @@ import {
   Controller,
   Get,
   HttpException,
+  InternalServerErrorException,
   Logger,
   MaxFileSizeValidator,
   NotFoundException,
@@ -34,6 +35,10 @@ import { validate } from 'class-validator';
 import { plainToClassFromExist } from 'class-transformer';
 import { ProfileService } from '@app/user/profile.service';
 import { CreateProfileDto, UpdateProfileDto } from '@app/user/profile.dto';
+import { rename } from 'fs/promises';
+import { join } from 'path';
+import { rm } from 'fs';
+import { fileTypeFromFile } from 'file-type';
 
 const ERR_INVALID_ID = new BadRequestException('Invalid identifier');
 const ERR_PROFILE_NOT_FOUND = new NotFoundException('User not found');
@@ -84,7 +89,7 @@ export class ApiController {
   @ApiConsumes('multipart/form-data')
   @Put('updateProfile')
   @UseInterceptors(FileInterceptor('file'))
-  updateProfile(
+  async updateProfile(
     @Request() req: Request,
     @Body() dto: UpdateProfileDto,
     @UploadedFile(
@@ -93,12 +98,25 @@ export class ApiController {
         validators: [new MaxFileSizeValidator({ maxSize: 5124000 })],
       }),
     )
-    file: Express.Multer.File,
+    file?: Express.Multer.File,
   ) {
     if (dto.username == '' || dto.username == null) {
       dto.username = undefined;
     }
     dto.userId = req['user'].sub;
+
+    if (file && !/image/i.test((await fileTypeFromFile(file.path)).mime)) {
+      throw new BadRequestException('Invalid type of uploaded image');
+    } else if (file?.path) {
+      rename(
+        file.path,
+        join(process.cwd(), 'public', 'users', 'img', req['user'].profileId),
+      )
+        .then(() => Logger.debug(`image profile successfully uploaded`))
+        .catch((reason) =>
+          Logger.error(`unable to move uploaded file: ${reason}`),
+        );
+    }
 
     const updatedProfile = this.profileService.update(
       req['user'].profileId,

@@ -9,8 +9,6 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import {
-  ConnectedSocket,
-  MessageBody,
   OnGatewayConnection,
   OnGatewayInit,
   SubscribeMessage,
@@ -70,7 +68,7 @@ export class StreamGateway implements OnGatewayInit, OnGatewayConnection {
 
   // save resource, disconnect client when they rn't responding.
   @SubscribeMessage('ping')
-  handlePing(@ConnectedSocket() client: Socket, @MessageBody() data) {
+  handlePing(client: Socket, data) {
     const PONG = 'pong!';
 
     const timeOut = configuration().gateway.timeout;

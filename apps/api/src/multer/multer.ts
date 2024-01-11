@@ -9,7 +9,7 @@ export class UserMulterOption implements MulterOptionsFactory {
   createMulterOptions(): MulterOptions | Promise<MulterOptions> {
     return {
       storage: diskStorage({
-        destination: join(process.cwd(), 'public', 'users', 'img'),
+        destination: join(process.cwd(), 'upload'),
         filename: function (req, file, callback) {
           callback(null, req['user'].profileId);
         },
