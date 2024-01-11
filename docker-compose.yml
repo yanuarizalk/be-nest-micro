@@ -68,6 +68,8 @@ services:
       - BROKER_URI=amqp://rabbitmq:5672
     volumes:
       - ./public/users/img:/public/users/img
+      - ./upload:/upload
+      - ./public/message:/public/message
     depends_on:
       - kong
   auth:
