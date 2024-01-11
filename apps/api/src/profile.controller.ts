@@ -23,7 +23,11 @@ import { ProfileService } from '@app/user/profile.service';
 import { CreateProfileDto, UpdateProfileDto } from '@app/user/profile.dto';
 import { rename } from 'fs/promises';
 import { join } from 'path';
-import { fileTypeFromFile } from 'file-type';
+// import { fileTypeFromFile } from 'file-type';
+let fileTypeFromFile;
+eval(`import('file-type')`).then((mod) => {
+  fileTypeFromFile = mod.fileTypeFromFile;
+});
 
 const ERR_INVALID_ID = new BadRequestException('Invalid identifier');
 const ERR_PROFILE_NOT_FOUND = new NotFoundException('User not found');
