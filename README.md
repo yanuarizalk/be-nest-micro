@@ -72,4 +72,4 @@ Because of incapability of swagging websocket, you can try it on my [Postman wor
 
 **Q:** There's a api gateway service, kong isn't it? what are they for?  
 
-**A:** As we use micro service, api gateway hold the important role to manage them, such as for abstraction layer between upstream & client, reduce the pain of managing route through service api itself, wrap them up, integrate with tracing to give better analytical usage, security purpose & etc.
+**A:** As we use micro service, api gateway hold the important role to manage them, such as for abstraction layer between upstream & client, reduce the pain of managing route through service api itself(Rate limiting, authentication & authorization, transformation, etc), wrap them up, integrate with tracing to give better analytical usage, security purpose & etc.
