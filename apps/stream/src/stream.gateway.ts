@@ -9,6 +9,8 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import {
+  ConnectedSocket,
+  MessageBody,
   OnGatewayConnection,
   OnGatewayInit,
   SubscribeMessage,
@@ -17,6 +19,7 @@ import {
 } from '@nestjs/websockets';
 import { plainToClass } from 'class-transformer';
 import { validate } from 'class-validator';
+import configuration from 'config/configuration';
 import { Types } from 'mongoose';
 import { Server, Socket } from 'socket.io';
 
@@ -34,6 +37,20 @@ export class StreamGateway implements OnGatewayInit, OnGatewayConnection {
     private messageService: MessageService,
   ) {}
 
+  setSocketTimeout(socket: Socket): NodeJS.Timeout {
+    const timeOut = configuration().gateway.timeout;
+    if (Number.isNaN(timeOut) || timeOut <= 0) {
+      return;
+    }
+
+    return setTimeout(() => {
+      Logger.debug(
+        `disconnecting client ${socket.id} because of socket timeout`,
+      );
+      socket.disconnect(true);
+    }, configuration().gateway.timeout * 1000);
+  }
+
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   afterInit(server: Server) {
     Logger.debug('Websocket server initiated');
@@ -41,6 +58,33 @@ export class StreamGateway implements OnGatewayInit, OnGatewayConnection {
 
   handleConnection(client: Socket, ...args: any[]) {
     this.jwtGuard.handleWsConnection(client, ...args);
+    if (client.disconnected) {
+      return;
+    }
+
+    client.data['ping'] = {
+      time: new Date().getTime(),
+      callbackId: this.setSocketTimeout(client),
+    };
+  }
+
+  // save resource, disconnect client when they rn't responding.
+  @SubscribeMessage('ping')
+  handlePing(@ConnectedSocket() client: Socket, @MessageBody() data) {
+    const PONG = 'pong!';
+
+    const timeOut = configuration().gateway.timeout;
+    if (!Number.isNaN(timeOut) && timeOut > 0) {
+      clearTimeout(client.data['ping'].callbackId);
+      client.data['ping'] = {
+        time: new Date().getTime(),
+        callbackId: this.setSocketTimeout(client),
+      };
+    }
+
+    if (data == 'ping') {
+      client.emit('ping', PONG);
+    }
   }
 
   @SubscribeMessage('message')

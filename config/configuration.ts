@@ -16,6 +16,10 @@ export default () => ({
   secrets: {
     jwt: process.env.SECRET_JWT ?? 'siomFgvp3490R583mfOpwcm3ir4mf',
   },
+  gateway: {
+    // disconnect client websocket if they'r not pinged within configured interval, in second
+    timeout: parseInt(process.env.GATEWAY_TIMEOUT, 10) || Number(300),
+  },
   inProduction: function (): boolean {
     return /^prod$|^production$/i.test(this.env);
   },
