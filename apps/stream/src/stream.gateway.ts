@@ -35,18 +35,22 @@ export class StreamGateway implements OnGatewayInit, OnGatewayConnection {
     private messageService: MessageService,
   ) {}
 
-  setSocketTimeout(socket: Socket): NodeJS.Timeout {
+  setSocketTimeout(socket: Socket) {
     const timeOut = configuration().gateway.timeout;
     if (Number.isNaN(timeOut) || timeOut <= 0) {
       return;
     }
 
-    return setTimeout(() => {
-      Logger.debug(
-        `disconnecting client ${socket.id} because of socket timeout`,
-      );
-      socket.disconnect(true);
-    }, configuration().gateway.timeout * 1000);
+    clearTimeout(socket.data['ping']?.callbackId);
+    socket.data['ping'] = {
+      time: new Date().getTime(),
+      callbackId: setTimeout(() => {
+        Logger.debug(
+          `disconnecting client ${socket.id} because of socket timeout`,
+        );
+        socket.disconnect(true);
+      }, configuration().gateway.timeout * 1000),
+    };
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -60,10 +64,7 @@ export class StreamGateway implements OnGatewayInit, OnGatewayConnection {
       return;
     }
 
-    client.data['ping'] = {
-      time: new Date().getTime(),
-      callbackId: this.setSocketTimeout(client),
-    };
+    this.setSocketTimeout(client);
   }
 
   // save resource, disconnect client when they rn't responding.
@@ -71,14 +72,7 @@ export class StreamGateway implements OnGatewayInit, OnGatewayConnection {
   handlePing(client: Socket, data) {
     const PONG = 'pong!';
 
-    const timeOut = configuration().gateway.timeout;
-    if (!Number.isNaN(timeOut) && timeOut > 0) {
-      clearTimeout(client.data['ping'].callbackId);
-      client.data['ping'] = {
-        time: new Date().getTime(),
-        callbackId: this.setSocketTimeout(client),
-      };
-    }
+    this.setSocketTimeout(client);
 
     if (data == 'ping') {
       client.emit('ping', PONG);
@@ -87,6 +81,8 @@ export class StreamGateway implements OnGatewayInit, OnGatewayConnection {
 
   @SubscribeMessage('message')
   async handleMessage(client: Socket, data) {
+    this.setSocketTimeout(client);
+
     const dto = plainToClass(PublishMessageDto, data, {
       enableImplicitConversion: true,
     });
@@ -120,6 +116,26 @@ export class StreamGateway implements OnGatewayInit, OnGatewayConnection {
 
     Logger.debug(`User ${dto.sender} send a messsage to ${dto.receiver}`);
 
-    return this.messageService.publish(dto);
+    return this.messageService.publishMessage(dto);
+  }
+
+  @SubscribeMessage('read')
+  handleRead(client: Socket, messageId: string[]) {
+    this.setSocketTimeout(client);
+
+    const ids: Types.ObjectId[] = [];
+    messageId.forEach((v) => {
+      if (Types.ObjectId.isValid(v))
+        ids.push(Types.ObjectId.createFromHexString(v));
+    });
+
+    if (ids.length < 0) {
+      client.emit('read', {
+        message: 'invalid identifier',
+      });
+      return;
+    }
+
+    return this.messageService.publishRead(ids, client.data['user'].profileId);
   }
 }

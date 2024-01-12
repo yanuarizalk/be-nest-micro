@@ -3,6 +3,11 @@ import { plainToClass } from 'class-transformer';
 import { MaxLength } from 'class-validator';
 import { Document } from 'mongoose';
 
+export enum MessageState {
+  Delivered = 1,
+  Read = 2,
+}
+
 export class MessageLocation {
   lat: number;
   lng: number;
@@ -53,9 +58,11 @@ export class Message extends Document {
   @MaxLength(200)
   text: string;
 
-  // 0: published or stored, 1: retrieved
-  @Prop()
-  state: number;
+  // 0: published or stored, 1: delivered to retriever, 2: read by retriever
+  @Prop({
+    type: Object,
+  })
+  state: Record<MessageState, Date>;
 
   @Prop({
     type: MessageLocation,

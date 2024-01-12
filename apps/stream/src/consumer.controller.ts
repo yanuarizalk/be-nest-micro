@@ -1,12 +1,17 @@
 import { MessageService } from '@app/message';
 import { PublishMessageDto } from '@app/message/message.dto';
-import { Message, MessageFile } from '@app/message/message.schema';
+import {
+  Message,
+  MessageFile,
+  MessageState,
+} from '@app/message/message.schema';
 import { Controller, Logger } from '@nestjs/common';
 import { Ctx, EventPattern, Payload, RmqContext } from '@nestjs/microservices';
 import { StreamGateway } from './stream.gateway';
 import { join } from 'path';
 import { rename, writeFile } from 'fs/promises';
 import configuration from 'config/configuration';
+import { Types, UpdateWriteOpResult } from 'mongoose';
 // import { FileTypeResult, fileTypeFromBuffer } from 'file-type';
 let fileTypeFromFile, fileTypeFromBuffer;
 eval(`import('file-type')`).then((mod) => {
@@ -23,7 +28,7 @@ export class ConsumerController {
     private readonly streamGateway: StreamGateway,
   ) {}
 
-  publishMessageToSocket(data, ...profileIds: string[]) {
+  publishMessageToSocket(data: Message, ...profileIds: string[]) {
     if (profileIds.length == 0) return;
 
     this.streamGateway.server.fetchSockets().then((sockets) => {
@@ -35,6 +40,9 @@ export class ConsumerController {
             `saved message emitted to socket with event id '${socket.id}'`,
           );
           found++;
+
+          if (data.receiver == socket.data.user?.profileId)
+            this.messageService.updateState(MessageState.Delivered, data._id);
         }
       });
       if (!found) Logger.debug(`no client socket found to send message`);
@@ -91,7 +99,6 @@ export class ConsumerController {
     }
 
     return results;
-    // });
   }
 
   @EventPattern('message')
@@ -102,6 +109,7 @@ export class ConsumerController {
     const msg = context.getMessage();
 
     try {
+      if (data.files && data.files.constructor == String) data.files = [];
       const v = await this.messageService.save(data);
 
       // form fields
@@ -115,12 +123,55 @@ export class ConsumerController {
       Logger.log(`saved message id: ${v._id}`);
       context.getChannelRef().ack(msg);
 
-      this.publishMessageToSocket(data, v.sender, v.receiver);
+      this.publishMessageToSocket(v, v.sender, v.receiver);
 
       return v;
     } catch (err) {
       if (msg.fields.redelivered) {
         Logger.error('unable to save message: ', err);
+        context.getChannelRef().ack(msg);
+        return;
+      }
+      context.getChannelRef().nack(msg);
+
+      return err;
+    }
+  }
+
+  @EventPattern('read')
+  async consumeRead(
+    @Payload()
+    data: {
+      ids: Types.ObjectId[];
+      profileId: string;
+    },
+    @Ctx() context: RmqContext,
+  ): Promise<UpdateWriteOpResult> {
+    const msg = context.getMessage();
+    try {
+      const messages = await this.messageService.findId(
+        data.ids,
+        data.profileId,
+      );
+
+      if (messages.length <= 0) {
+        context.getChannelRef().ack(msg);
+        return;
+      }
+
+      data.ids = [];
+      messages.forEach((v) => data.ids.push(v._id));
+
+      Logger.log(`message id: marked as read ${data.ids}`);
+      context.getChannelRef().ack(msg);
+
+      return await this.messageService.updateState(
+        MessageState.Read,
+        ...data.ids,
+      );
+    } catch (err) {
+      if (msg.fields.redelivered) {
+        Logger.error('unable to read message: ', err);
         context.getChannelRef().ack(msg);
         return;
       }

@@ -81,6 +81,6 @@ export class MessageController {
       dto.files = files;
     }
 
-    return this.messageService.publish(dto);
+    return this.messageService.publishMessage(dto);
   }
 }

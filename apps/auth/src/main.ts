@@ -5,7 +5,11 @@ import configuration from 'config/configuration';
 import { ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AuthModule);
+  const app = await NestFactory.create(AuthModule, {
+    logger: configuration().inProduction()
+      ? ['error', 'fatal']
+      : ['debug', 'error', 'fatal', 'log', 'verbose', 'warn'],
+  });
 
   const swaggerConfig = new DocumentBuilder()
     .setTitle('Auth API Documentation')
